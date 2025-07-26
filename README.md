@@ -2,24 +2,18 @@
 
 A comprehensive bash script for managing automated backups to Google Drive using rclone. This tool provides an interactive menu system for configuring multiple Google Drive remotes, uploading backups, and restoring files with advanced folder browsing capabilities.
 
-## Features
-
-- **Interactive Menu System**: Easy-to-use command-line interface
-- **Multiple Remote Support**: Configure and manage multiple Google Drive accounts
-- **Advanced File Browser**: Navigate remote folders with intuitive controls
-- **Batch Operations**: Upload/download multiple files with flexible selection
-- **Automated Setup**: One-click rclone installation and configuration
-- **Status Monitoring**: Real-time remote accessibility and storage usage
-- **Secure Configuration**: JSON-based config with credential management
-
 ## Quick Start
 
 ### Clone and Setup
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd rclone_setup_with_googledrive
+git clone https://github.com/rahuldineshk/rclone-googledrive-backup.git
+cd rclone-googledrive-backup
+
+# Copy and configure your credentials
+cp sample_config.json config.json
+# Edit config.json with your Google Drive API credentials
 
 # Make the script executable
 chmod +x rclone.sh
@@ -33,6 +27,16 @@ sudo ./rclone.sh
 1. **Install rclone** (Option 1 in main menu)
 2. **Configure your Google Drive remote** (Option 4 → Select remote → Option 1)
 3. **Start backing up** (Option 4 → Select remote → Option 3)
+
+## Features
+
+- **Interactive Menu System**: Easy-to-use command-line interface
+- **Multiple Remote Support**: Configure and manage multiple Google Drive accounts
+- **Advanced File Browser**: Navigate remote folders with intuitive controls
+- **Batch Operations**: Upload/download multiple files with flexible selection
+- **Automated Setup**: One-click rclone installation and configuration
+- **Status Monitoring**: Real-time remote accessibility and storage usage
+- **Secure Configuration**: JSON-based config with credential management
 
 ## Installation
 
