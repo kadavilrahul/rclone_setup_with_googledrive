@@ -786,7 +786,7 @@ show_main_menu() {
     echo "  1) Install rclone Package - Download and install rclone with dependencies"
     echo "  2) Show Installation Status & Overview - Check rclone setup and configuration status"
     echo "  3) Show Existing Remotes Details - Display configured remotes and accessibility"
-    echo "  4) Manage a Website Remote - Configure and use remote storage connections"
+    echo "  4) Manage Remote - Configure and use remote storage connections"
     echo "  5) Uninstall rclone Package (Deletes Everything) - Remove rclone and all configurations"
     echo "  0) Exit - Return to main menu"
     echo -e "${CYAN}----------------------------------------------------------------------${NC}"
