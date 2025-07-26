@@ -19,10 +19,10 @@ cp sample_config.json config.json
 # Edit config.json with your Google Drive API credentials
 
 # Make the script executable
-chmod +x rclone.sh
+chmod +x run.sh
 
 # Run the setup (requires sudo)
-sudo ./rclone.sh
+sudo ./run.sh
 ```
 
 ### First Time Setup
@@ -65,7 +65,7 @@ sudo apt install -y rclone jq
 
 # Download and setup
 wget https://github.com/rahuldineshk/rclone-googledrive-backup.com
-chmod +x rclone.sh
+chmod +x run.sh
 ```
 
 ## Configuration
@@ -154,7 +154,7 @@ all          # All available files
 
 ```
 rclone_setup_with_googledrive/
-├── rclone.sh              # Main script
+├── run.sh              # Main script
 ├── config.json            # Configuration file (keep private)
 ├── sample_config.json     # Example configuration
 ├── README.md              # This file
@@ -188,7 +188,7 @@ rclone lsf remote_name: --max-depth 1
 
 **Permission denied**
 - Ensure script is run with sudo
-- Check file permissions: `chmod +x rclone.sh`
+- Check file permissions: `chmod +x run.sh`
 
 ### Log Files
 
