@@ -1,0 +1,27 @@
+{
+  "mysql_root_password": "your_mysql_password_here",
+  "admin_email": "your-email@example.com",
+  "main_domains": [
+    "example.com",
+    "anotherdomain.com"
+  ],
+  "subdomains": [
+    "subdomain.example.com"
+  ],
+  "subdirectory_domains": [
+    "example.com/subdirectory"
+  ],
+  "rclone_remotes": [
+    {
+      "client_id": "your-google-client-id.apps.googleusercontent.com",
+      "client_secret": "your-google-client-secret",
+      "remote_name": "backup_remote_1"
+    },
+    {
+      "client_id": "another-client-id.apps.googleusercontent.com", 
+      "client_secret": "another-client-secret",
+      "remote_name": "backup_remote_2"
+    }
+  ],
+  "redis_max_memory": "1"
+}

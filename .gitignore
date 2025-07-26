@@ -1,0 +1,72 @@
+# Sensitive Configuration Files
+config.json
+*.json.backup
+
+# rclone Configuration Directory
+.config/
+rclone.conf
+
+# Log Files
+*.log
+logs/
+/var/log/rclone_*.log
+
+# Backup Files
+*.bak
+*.backup
+*~
+
+# Temporary Files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# System Files
+.directory
+desktop.ini
+
+# Credentials and Keys
+*.key
+*.pem
+*.p12
+*.pfx
+credentials.json
+token.json
+client_secret*.json
+
+# Environment Files
+.env
+.env.local
+.env.production
+.env.staging
+
+# Cache Directories
+.cache/
+cache/
+
+# Runtime Files
+*.pid
+*.sock
+
+# Archive Files (if containing sensitive data)
+# Uncomment if your backups contain sensitive information
+# *.tar.gz
+# *.zip
+# *.7z
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
