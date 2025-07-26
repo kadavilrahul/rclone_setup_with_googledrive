@@ -94,7 +94,7 @@ Edit `config.json` with your Google Drive API credentials:
 }
 ```
 
-**Note**: Only the `rclone_remotes` array is required for this script. You can add multiple remotes for different Google Drive accounts.
+**Note**: Replace the placeholder values with your actual Google Drive API credentials. The script supports multiple remotes if needed.
 
 ## Usage
 

@@ -3,12 +3,7 @@
     {
       "client_id": "your-google-client-id.apps.googleusercontent.com",
       "client_secret": "your-google-client-secret",
-      "remote_name": "backup_remote_1"
-    },
-    {
-      "client_id": "another-client-id.apps.googleusercontent.com", 
-      "client_secret": "another-client-secret",
-      "remote_name": "backup_remote_2"
+      "remote_name": "server_backup"
     }
   ]
 }
