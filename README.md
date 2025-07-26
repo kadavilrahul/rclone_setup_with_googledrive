@@ -164,7 +164,7 @@ rclone_setup_with_googledrive/
 
 ## Default Paths
 
-- **Backup Source**: `/website_backups` (configurable in script)
+- **Backup Source**: `~/backups` (user's home directory, configurable via BACKUP_SOURCE env var)
 - **Log Directory**: `/var/log`
 - **Config File**: `./config.json`
 - **rclone Config**: `~/.config/rclone/`
