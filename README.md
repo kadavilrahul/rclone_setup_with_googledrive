@@ -5,12 +5,15 @@ A comprehensive bash script for managing automated backups to Google Drive using
 ## Quick Start
 
 ### Clone and Setup
+# Clone the repository
 
 ```bash
-# Clone the repository
 git clone https://github.com/rahuldineshk/rclone-googledrive-backup.git
+```
+```bash
 cd rclone-googledrive-backup
-
+```
+```
 # Copy and configure your credentials
 cp sample_config.json config.json
 # Edit config.json with your Google Drive API credentials
@@ -61,7 +64,7 @@ sudo apt update
 sudo apt install -y rclone jq
 
 # Download and setup
-wget <script-url>
+wget https://github.com/rahuldineshk/rclone-googledrive-backup.com
 chmod +x rclone.sh
 ```
 
@@ -77,19 +80,21 @@ chmod +x rclone.sh
 
 ### Configuration File
 
-Edit `config.json` with your credentials:
+Edit `config.json` with your Google Drive API credentials:
 
 ```json
 {
   "rclone_remotes": [
     {
-      "client_id": "your-google-client-id",
-      "client_secret": "your-google-client-secret", 
-      "remote_name": "your_remote_name"
+      "client_id": "your-google-client-id.apps.googleusercontent.com",
+      "client_secret": "your-google-client-secret",
+      "remote_name": "server_backup"
     }
   ]
 }
 ```
+
+**Note**: Only the `rclone_remotes` array is required for this script. You can add multiple remotes for different Google Drive accounts.
 
 ## Usage
 
