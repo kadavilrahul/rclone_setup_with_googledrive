@@ -8,7 +8,13 @@
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
 BLUE='\033[0;34m'; CYAN='\033[0;36m'; NC='\033[0m'
 CONFIG_FILE="$(dirname "${BASH_SOURCE[0]}")/config.json"
-BACKUP_SOURCE="${BACKUP_SOURCE:-$HOME/backups}"
+# Get the original user's home directory when running with sudo
+if [ -n "$SUDO_USER" ]; then
+    USER_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+else
+    USER_HOME="$HOME"
+fi
+BACKUP_SOURCE="${BACKUP_SOURCE:-$USER_HOME/backups}"
 LOG_DIR="/var/log"
 
 # --- Utility Functions ---
