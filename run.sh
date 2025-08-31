@@ -14,7 +14,8 @@ if [ -n "$SUDO_USER" ]; then
 else
     USER_HOME="$HOME"
 fi
-BACKUP_SOURCE="${BACKUP_SOURCE:-$USER_HOME/backups}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BACKUP_SOURCE="${BACKUP_SOURCE:-$SCRIPT_DIR/backups}"
 LOG_DIR="/var/log"
 
 # --- Utility Functions ---
@@ -788,7 +789,7 @@ show_main_menu() {
     echo "  3) Show Existing Remotes Details - Display configured remotes and accessibility"
     echo "  4) Manage Remote - Configure and use remote storage connections"
     echo "  5) Uninstall rclone Package (Deletes Everything) - Remove rclone and all configurations"
-    echo "  0) Exit - Return to main menu"
+    echo "  0) Exit"
     echo -e "${CYAN}----------------------------------------------------------------------${NC}"
 }
 

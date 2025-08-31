@@ -56,11 +56,14 @@ cache/
 *.pid
 *.sock
 
-# Archive Files (if containing sensitive data)
-# Uncomment if your backups contain sensitive information
-# *.tar.gz
-# *.zip
-# *.7z
+# Backup Directories
+backups/
+
+# Archive Files
+*.tar
+*.tar.gz
+*.zip
+*.7z
 
 # OS Generated Files
 .DS_Store
