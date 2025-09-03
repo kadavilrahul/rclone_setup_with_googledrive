@@ -1,6 +1,72 @@
-# rclone Useful Commands Reference
+# rclone Commands Reference & Menu System
 
-This document contains useful rclone commands for managing your Google Drive backups outside of the interactive script.
+This document contains the menu system structure and useful rclone commands for managing your Google Drive backups.
+
+## Menu System Commands
+
+### Main Menu Format
+```
+rclone Google Drive Management System
+======================================================================
+
+1. Install rclone Package           ./run.sh install      # Download and install rclone with dependencies
+2. System Health Check              ./run.sh health       # Check rclone setup and configuration status
+3. Show Remote Details              ./run.sh remotes      # Display configured remotes and accessibility
+4. Configure New Remote             ./run.sh config       # Set up new Google Drive authentication
+5. Upload Backups to Drive          ./run.sh upload       # Copy local backups to remote Drive folder
+6. Download from Drive              ./run.sh download     # Restore backups from Drive to local system
+7. Check Storage Usage              ./run.sh sizes        # View local and remote storage usage statistics
+8. Test Remote Connection           ./run.sh test         # Verify remote accessibility and authentication
+9. Browse Remote Folders            ./run.sh browse       # Interactive navigation of remote directory structure
+10. Sync Directories                ./run.sh sync         # Synchronize local and remote directories
+11. Remove Remote Configuration     ./run.sh remove       # Delete specific remote configuration
+12. Complete System Uninstall       ./run.sh uninstall    # Remove rclone and all configurations
+0. Exit
+
+Select option:
+```
+
+### Remote-Specific Menu Format
+```
+rclone Remote Management: [REMOTE_NAME]
+======================================================================
+
+1. Configure Remote                 ./run.sh config [REMOTE_NAME]     # Set up Google Drive authentication
+2. Test Remote Connection           ./run.sh test [REMOTE_NAME]       # Verify remote accessibility
+3. Check Storage Usage              ./run.sh sizes [REMOTE_NAME]      # View local and remote storage usage
+4. Upload Files to Drive            ./run.sh upload [REMOTE_NAME]     # Copy local backups to Drive folder
+5. Download Files from Drive        ./run.sh download [REMOTE_NAME]   # Restore backups from Drive to local
+6. Browse Remote Folders            ./run.sh browse [REMOTE_NAME]     # Navigate remote directory structure
+7. Sync Local with Remote           ./run.sh sync [REMOTE_NAME]       # Synchronize directories bidirectionally
+8. List Remote Contents             ./run.sh list [REMOTE_NAME]       # Show all files and folders on remote
+9. Remove This Remote               ./run.sh remove [REMOTE_NAME]     # Delete this remote configuration
+0. Back to Main Menu
+
+Select option:
+```
+
+## Direct CLI Usage Examples
+
+```bash
+# Quick setup and first backup
+sudo ./run.sh install              # Install rclone
+sudo ./run.sh config               # Configure your first remote
+sudo ./run.sh upload               # Upload backups to Drive
+
+# Check system status
+sudo ./run.sh health               # Overall system health
+sudo ./run.sh remotes              # Show all configured remotes
+sudo ./run.sh test                 # Test current remote connection
+
+# File operations
+sudo ./run.sh browse               # Browse remote folders
+sudo ./run.sh download             # Download files from Drive
+sudo ./run.sh sync                 # Sync local and remote directories
+
+# Management
+sudo ./run.sh remove backup_remote # Remove specific remote
+sudo ./run.sh uninstall           # Complete removal
+```
 
 ## Prerequisites
 

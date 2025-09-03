@@ -216,6 +216,74 @@ uninstall_rclone_package() {
 
 # === Remote-Specific Functions ===
 
+test_remote_connection() {
+    info "Testing connection to remote '$REMOTE_NAME:'"
+    if timeout 10 rclone lsf "$REMOTE_NAME:" --max-depth 1 &>/dev/null; then
+        success "Remote '$REMOTE_NAME:' is accessible and working properly"
+        # Show basic remote info
+        local remote_type=$(rclone config show "$REMOTE_NAME" 2>/dev/null | grep "type" | cut -d'=' -f2 | tr -d ' ' || echo "unknown")
+        info "Remote type: $remote_type"
+        
+        # Try to get storage info
+        local usage=$(timeout 10 rclone about "$REMOTE_NAME:" 2>/dev/null | head -5 || echo "Storage info unavailable")
+        if [ "$usage" != "Storage info unavailable" ]; then
+            echo -e "${GREEN}Storage Information:${NC}"
+            echo "$usage"
+        fi
+    else
+        error "Remote '$REMOTE_NAME:' is not accessible. Please check authentication."
+    fi
+}
+
+sync_directories() {
+    info "Synchronizing directories with remote '$REMOTE_NAME:'"
+    warn "This will sync local backup directory with remote storage"
+    warn "Files may be added, modified, or deleted in both locations"
+    
+    read -p "Continue with sync? (y/n): " -n 1 -r; echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        info "Sync cancelled."
+        return
+    fi
+    
+    if [ ! -d "$BACKUP_SOURCE" ]; then
+        mkdir -p "$BACKUP_SOURCE" || error "Failed to create backup directory: $BACKUP_SOURCE"
+    fi
+    
+    info "Starting bidirectional sync..."
+    if rclone sync "$BACKUP_SOURCE" "$REMOTE_NAME:" --progress -v; then
+        success "Sync completed successfully"
+    else
+        error "Sync failed. Check the logs for details."
+    fi
+}
+
+list_remote_contents() {
+    info "Listing all contents of remote '$REMOTE_NAME:'"
+    echo -e "${YELLOW}Remote contents:${NC}"
+    if ! rclone tree "$REMOTE_NAME:" --human-readable 2>/dev/null; then
+        # Fallback to basic listing if tree command fails
+        rclone lsl "$REMOTE_NAME:" 2>/dev/null || error "Failed to list remote contents"
+    fi
+}
+
+remove_remote_config() {
+    warn "This will PERMANENTLY DELETE the configuration for remote '$REMOTE_NAME'"
+    warn "You will need to reconfigure authentication to access this remote again"
+    
+    read -p "Are you sure you want to remove '$REMOTE_NAME'? (y/n): " -n 1 -r; echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        info "Remote removal cancelled."
+        return
+    fi
+    
+    if rclone config delete "$REMOTE_NAME" 2>/dev/null; then
+        success "Remote '$REMOTE_NAME' configuration deleted successfully"
+    else
+        error "Failed to delete remote configuration"
+    fi
+}
+
 select_remote() {
     info "Loading remotes from $CONFIG_FILE"
     [ ! -f "$CONFIG_FILE" ] && error "Configuration file not found: $CONFIG_FILE"
@@ -779,31 +847,88 @@ restore_with_browse() {
 
 # === Menu System ===
 
+handle_main_menu_choice() {
+    local choice="$1"
+    case $choice in
+        1) install_rclone_package ;;
+        2) show_rclone_status ;;
+        3) show_existing_remotes ;;
+        4) manage_remote_loop ;;
+        5) copy_backups_to_remote ;;
+        6) restore_with_browse ;;
+        7) check_sizes ;;
+        8) test_remote_connection ;;
+        9) browse_remote_folders ;;
+        10) sync_directories ;;
+        11) remove_remote_config ;;
+        12) uninstall_rclone_package ;;
+        0) exit 0 ;;
+        *) warn "Invalid option. Please select 0-12." ;;
+    esac
+    press_enter
+}
+
+handle_remote_menu_choice() {
+    local choice="$1"
+    case $choice in
+        1) configure_remote ;;
+        2) test_remote_connection ;;
+        3) check_sizes ;;
+        4) copy_backups_to_remote ;;
+        5) restore_with_browse ;;
+        6) browse_remote_folders ;;
+        7) sync_directories ;;
+        8) list_remote_contents ;;
+        9) remove_remote_config ;;
+        0) return 0 ;;
+        *) warn "Invalid option. Please select 0-9." ;;
+    esac
+    press_enter
+}
+
 show_main_menu() {
     clear
     echo -e "${CYAN}======================================================================${NC}"
-    echo "                         rclone Management - Main Menu"
+    echo "                    rclone Google Drive Management System"
     echo -e "${CYAN}======================================================================${NC}"
-    echo "  1) Install rclone Package - Download and install rclone with dependencies"
-    echo "  2) Show Installation Status & Overview - Check rclone setup and configuration status"
-    echo "  3) Show Existing Remotes Details - Display configured remotes and accessibility"
-    echo "  4) Manage Remote - Configure and use remote storage connections"
-    echo "  5) Uninstall rclone Package (Deletes Everything) - Remove rclone and all configurations"
-    echo "  0) Exit"
-    echo -e "${CYAN}----------------------------------------------------------------------${NC}"
+    echo ""
+    echo "1. Install rclone Package           ./run.sh install      # Download and install rclone with dependencies"
+    echo "2. System Health Check              ./run.sh health       # Check rclone setup and configuration status"
+    echo "3. Show Remote Details              ./run.sh remotes      # Display configured remotes and accessibility"
+    echo "4. Configure New Remote             ./run.sh config       # Set up new Google Drive authentication"
+    echo "5. Upload Backups to Drive          ./run.sh upload       # Copy local backups to remote Drive folder"
+    echo "6. Download from Drive              ./run.sh download     # Restore backups from Drive to local system"
+    echo "7. Check Storage Usage              ./run.sh sizes        # View local and remote storage usage statistics"
+    echo "8. Test Remote Connection           ./run.sh test         # Verify remote accessibility and authentication"
+    echo "9. Browse Remote Folders            ./run.sh browse       # Interactive navigation of remote directory structure"
+    echo "10. Sync Directories                ./run.sh sync         # Synchronize local and remote directories"
+    echo "11. Remove Remote Configuration     ./run.sh remove       # Delete specific remote configuration"
+    echo "12. Complete System Uninstall       ./run.sh uninstall    # Remove rclone and all configurations"
+    echo "0. Exit"
+    echo ""
+    read -p "Select option: " choice
+    handle_main_menu_choice "$choice"
 }
 
 show_remote_menu() {
     clear
     echo -e "${CYAN}======================================================================${NC}"
-    echo -e "          rclone Management for: ${YELLOW}${REMOTE_NAME}${NC}"
+    echo -e "              rclone Remote Management: ${YELLOW}${REMOTE_NAME}${NC}"
     echo -e "${CYAN}======================================================================${NC}"
-    echo "  1) Configure or Re-Configure Remote - Set up Google Drive authentication"
-    echo "  2) Check Folder Sizes - View local and remote storage usage"
-    echo "  3) Copy Backups to Remote - Upload local backups to Drive folder"
-    echo "  4) Restore Backups from Drive (Browse) - Download backups from Drive to local"
-    echo "  0) Back to Main Menu - Return to main rclone menu"
-    echo -e "${CYAN}----------------------------------------------------------------------${NC}"
+    echo ""
+    echo "1. Configure Remote                 ./run.sh config ${REMOTE_NAME}     # Set up Google Drive authentication"
+    echo "2. Test Remote Connection           ./run.sh test ${REMOTE_NAME}       # Verify remote accessibility"
+    echo "3. Check Storage Usage              ./run.sh sizes ${REMOTE_NAME}      # View local and remote storage usage"
+    echo "4. Upload Files to Drive            ./run.sh upload ${REMOTE_NAME}     # Copy local backups to Drive folder"
+    echo "5. Download Files from Drive        ./run.sh download ${REMOTE_NAME}   # Restore backups from Drive to local"
+    echo "6. Browse Remote Folders            ./run.sh browse ${REMOTE_NAME}     # Navigate remote directory structure"
+    echo "7. Sync Local with Remote           ./run.sh sync ${REMOTE_NAME}       # Synchronize directories bidirectionally"
+    echo "8. List Remote Contents             ./run.sh list ${REMOTE_NAME}       # Show all files and folders on remote"
+    echo "9. Remove This Remote               ./run.sh remove ${REMOTE_NAME}     # Delete this remote configuration"
+    echo "0. Back to Main Menu"
+    echo ""
+    read -p "Select option: " choice
+    handle_remote_menu_choice "$choice"
 }
 
 manage_remote_loop() {
@@ -812,36 +937,193 @@ manage_remote_loop() {
         
         while true; do
             show_remote_menu
-            read -p "Select action for '$REMOTE_NAME' (0-4): " choice
-            case $choice in
-                1) configure_remote ;;
-                2) check_sizes ;;
-                3) copy_backups_to_remote ;;
-                4) restore_with_browse ;;
-                0) break ;; # Break to re-select remote
-                *) warn "Invalid option." ;;
-            esac
-            press_enter
         done
     done
 }
 
+show_help() {
+    echo "Usage: ./run.sh [COMMAND] [REMOTE_NAME]"
+    echo ""
+    echo "Commands:"
+    echo "  install      Install rclone package"
+    echo "  health       Check system health and status"
+    echo "  remotes      Show existing remotes"
+    echo "  config       Configure new remote"
+    echo "  upload       Upload backups to Drive"
+    echo "  download     Download from Drive"
+    echo "  sizes        Check storage usage"
+    echo "  test         Test remote connection"
+    echo "  browse       Browse remote folders"
+    echo "  sync         Sync directories"
+    echo "  remove       Remove remote configuration"
+    echo "  uninstall    Uninstall rclone package"
+    echo ""
+    echo "Examples:"
+    echo "  ./run.sh install"
+    echo "  ./run.sh config server_backup"
+    echo "  ./run.sh upload"
+    echo ""
+    echo "If no command is provided, interactive menu will start."
+}
+
 main() {
     check_root
-    while true; do
-        show_main_menu
-        read -p "Select option (0-5): " choice
-        case $choice in
-            1) install_rclone_package ;;
-            2) show_rclone_status ;;
-            3) show_existing_remotes ;;
-            4) manage_remote_loop ;;
-            5) uninstall_rclone_package ;;
-            0) break ;;
-            *) warn "Invalid option." ;;
+    
+    # Handle command line arguments
+    if [ $# -gt 0 ]; then
+        case "$1" in
+            install)
+                install_rclone_package
+                ;;
+            health)
+                show_rclone_status
+                press_enter
+                ;;
+            remotes)
+                show_existing_remotes
+                press_enter
+                ;;
+            config)
+                if [ $# -gt 1 ]; then
+                    # Set specific remote if provided
+                    REMOTE_NAME="$2"
+                    # Need to get credentials from config
+                    if [ -f "$CONFIG_FILE" ]; then
+                        CLIENT_ID=$(jq -r ".rclone_remotes[] | select(.remote_name==\"$REMOTE_NAME\") | .client_id" "$CONFIG_FILE")
+                        CLIENT_SECRET=$(jq -r ".rclone_remotes[] | select(.remote_name==\"$REMOTE_NAME\") | .client_secret" "$CONFIG_FILE")
+                        if [[ -n "$CLIENT_ID" && "$CLIENT_ID" != "null" ]]; then
+                            configure_remote
+                        else
+                            error "Remote '$REMOTE_NAME' not found in config file"
+                        fi
+                    else
+                        error "Config file not found: $CONFIG_FILE"
+                    fi
+                else
+                    manage_remote_loop
+                fi
+                ;;
+            upload)
+                if [ $# -gt 1 ]; then
+                    REMOTE_NAME="$2"
+                    # Get credentials from config
+                    if [ -f "$CONFIG_FILE" ]; then
+                        CLIENT_ID=$(jq -r ".rclone_remotes[] | select(.remote_name==\"$REMOTE_NAME\") | .client_id" "$CONFIG_FILE")
+                        CLIENT_SECRET=$(jq -r ".rclone_remotes[] | select(.remote_name==\"$REMOTE_NAME\") | .client_secret" "$CONFIG_FILE")
+                        if [[ -n "$CLIENT_ID" && "$CLIENT_ID" != "null" ]]; then
+                            copy_backups_to_remote
+                        else
+                            error "Remote '$REMOTE_NAME' not found in config file"
+                        fi
+                    else
+                        error "Config file not found: $CONFIG_FILE"
+                    fi
+                else
+                    manage_remote_loop
+                fi
+                ;;
+            download)
+                if [ $# -gt 1 ]; then
+                    REMOTE_NAME="$2"
+                    # Get credentials from config
+                    if [ -f "$CONFIG_FILE" ]; then
+                        CLIENT_ID=$(jq -r ".rclone_remotes[] | select(.remote_name==\"$REMOTE_NAME\") | .client_id" "$CONFIG_FILE")
+                        CLIENT_SECRET=$(jq -r ".rclone_remotes[] | select(.remote_name==\"$REMOTE_NAME\") | .client_secret" "$CONFIG_FILE")
+                        if [[ -n "$CLIENT_ID" && "$CLIENT_ID" != "null" ]]; then
+                            restore_with_browse
+                        else
+                            error "Remote '$REMOTE_NAME' not found in config file"
+                        fi
+                    else
+                        error "Config file not found: $CONFIG_FILE"
+                    fi
+                else
+                    manage_remote_loop
+                fi
+                ;;
+            sizes)
+                if [ $# -gt 1 ]; then
+                    REMOTE_NAME="$2"
+                    # Get credentials from config
+                    if [ -f "$CONFIG_FILE" ]; then
+                        CLIENT_ID=$(jq -r ".rclone_remotes[] | select(.remote_name==\"$REMOTE_NAME\") | .client_id" "$CONFIG_FILE")
+                        CLIENT_SECRET=$(jq -r ".rclone_remotes[] | select(.remote_name==\"$REMOTE_NAME\") | .client_secret" "$CONFIG_FILE")
+                        if [[ -n "$CLIENT_ID" && "$CLIENT_ID" != "null" ]]; then
+                            check_sizes
+                            press_enter
+                        else
+                            error "Remote '$REMOTE_NAME' not found in config file"
+                        fi
+                    else
+                        error "Config file not found: $CONFIG_FILE"
+                    fi
+                else
+                    manage_remote_loop
+                fi
+                ;;
+            test)
+                if [ $# -gt 1 ]; then
+                    REMOTE_NAME="$2"
+                    test_remote_connection
+                    press_enter
+                else
+                    manage_remote_loop
+                fi
+                ;;
+            browse)
+                if [ $# -gt 1 ]; then
+                    REMOTE_NAME="$2"
+                    browse_remote_folders
+                    press_enter
+                else
+                    manage_remote_loop
+                fi
+                ;;
+            sync)
+                if [ $# -gt 1 ]; then
+                    REMOTE_NAME="$2"
+                    # Get credentials from config
+                    if [ -f "$CONFIG_FILE" ]; then
+                        CLIENT_ID=$(jq -r ".rclone_remotes[] | select(.remote_name==\"$REMOTE_NAME\") | .client_id" "$CONFIG_FILE")
+                        CLIENT_SECRET=$(jq -r ".rclone_remotes[] | select(.remote_name==\"$REMOTE_NAME\") | .client_secret" "$CONFIG_FILE")
+                        if [[ -n "$CLIENT_ID" && "$CLIENT_ID" != "null" ]]; then
+                            sync_directories
+                            press_enter
+                        else
+                            error "Remote '$REMOTE_NAME' not found in config file"
+                        fi
+                    else
+                        error "Config file not found: $CONFIG_FILE"
+                    fi
+                else
+                    manage_remote_loop
+                fi
+                ;;
+            remove)
+                if [ $# -gt 1 ]; then
+                    REMOTE_NAME="$2"
+                    remove_remote_config
+                    press_enter
+                else
+                    manage_remote_loop
+                fi
+                ;;
+            uninstall)
+                uninstall_rclone_package
+                ;;
+            help|--help|-h)
+                show_help
+                ;;
+            *)
+                error "Unknown command: $1. Use './run.sh help' for usage information."
+                ;;
         esac
-        press_enter
-    done
+    else
+        # Interactive menu mode
+        while true; do
+            show_main_menu
+        done
+    fi
     info "Exiting."
 }
 

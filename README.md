@@ -26,214 +26,116 @@ sudo ./run.sh
 ```
 
 ### First Time Setup
+1. **Install rclone** (Option 1)
+2. **Configure remote** (Option 4)  
+3. **Start backing up** (Option 5)
 
-1. **Install rclone** (Option 1 in main menu)
-2. **Configure your Google Drive remote** (Option 4 → Select remote → Option 1)
-3. **Start backing up** (Option 4 → Select remote → Option 3)
-
-## Features
-
-- **Interactive Menu System**: Easy-to-use command-line interface
-- **Multiple Remote Support**: Configure and manage multiple Google Drive accounts
-- **Advanced File Browser**: Navigate remote folders with intuitive controls
-- **Batch Operations**: Upload/download multiple files with flexible selection
-- **Automated Setup**: One-click rclone installation and configuration
-- **Status Monitoring**: Real-time remote accessibility and storage usage
-- **Secure Configuration**: JSON-based config with credential management
-
-## Installation
-
-### Prerequisites
-
-- Ubuntu/Debian-based Linux system
-- Root/sudo access
-- Internet connection for Google Drive authentication
-- Web browser for OAuth authentication
-
-### Automatic Installation
-
-The script will automatically install required dependencies:
-- `rclone` - Cloud storage sync tool
-- `jq` - JSON processor for configuration management
-
-### Manual Installation
-
-```bash
-# Install dependencies
-sudo apt update
-sudo apt install -y rclone jq
-
-# Download and setup
-wget https://github.com/rahuldineshk/rclone-googledrive-backup.com
-chmod +x run.sh
+## Menu System
+```
+1. Install rclone Package           ./run.sh install      # Download and install rclone
+2. System Health Check              ./run.sh health       # Check setup and status
+3. Show Remote Details              ./run.sh remotes      # Display configured remotes
+4. Configure New Remote             ./run.sh config       # Set up Google Drive auth
+5. Upload Backups to Drive          ./run.sh upload       # Copy local backups to Drive
+6. Download from Drive              ./run.sh download     # Restore backups from Drive
+7. Check Storage Usage              ./run.sh sizes        # View storage usage
+8. Test Remote Connection           ./run.sh test         # Verify remote access
+9. Browse Remote Folders            ./run.sh browse       # Navigate remote directories
+10. Sync Directories                ./run.sh sync         # Synchronize directories
+11. Remove Remote Configuration     ./run.sh remove       # Delete remote config
+12. Complete System Uninstall       ./run.sh uninstall    # Remove everything
+0. Exit
 ```
 
 ## Configuration
 
-### Setting up Google Drive API
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing one
-3. Enable Google Drive API
-4. Create OAuth 2.0 credentials (Desktop application)
-5. Copy Client ID and Client Secret
-
-### Configuration File
-
-Edit `config.json` with your Google Drive API credentials:
+### Google Drive API Setup
+1. [Google Cloud Console](https://console.cloud.google.com/) → Create project → Enable Google Drive API → OAuth 2.0 credentials
+2. Copy Client ID and Client Secret to `config.json`:
 
 ```json
 {
   "rclone_remotes": [
     {
-      "client_id": "your-google-client-id.apps.googleusercontent.com",
-      "client_secret": "your-google-client-secret",
+      "client_id": "your-client-id.apps.googleusercontent.com",
+      "client_secret": "your-client-secret", 
       "remote_name": "server_backup"
     }
   ]
 }
 ```
 
-**Note**: Replace the placeholder values with your actual Google Drive API credentials. The script supports multiple remotes if needed.
+## Essential Commands
 
-## Usage
-
-### Main Menu Options
-
-```
-1) Install rclone Package - Download and install rclone with dependencies
-2) Show Installation Status & Overview - Check rclone setup and configuration status  
-3) Show Existing Remotes Details - Display configured remotes and accessibility
-4) Manage a Website Remote - Configure and use remote storage connections
-5) Uninstall rclone Package - Remove rclone and all configurations
-0) Exit - Return to main menu
-```
-
-### Remote Management Options
-
-```
-1) Configure or Re-Configure Remote - Set up Google Drive authentication
-2) Check Folder Sizes - View local and remote storage usage
-3) Copy Backups to Remote - Upload local backups to Drive folder
-4) Restore Backups from Drive - Download backups from Drive to local
-0) Back to Main Menu - Return to main rclone menu
-```
-
-### File Operations
-
-#### Uploading Backups
-- Select files individually or in ranges (e.g., `1 3-5`)
-- Choose destination folder or create new ones
-- Advanced folder browser for precise placement
-- Progress tracking for large files
-
-#### Restoring Files
-- Interactive folder navigation
-- Multi-file selection with range support
-- Automatic local directory creation
-- Failed transfer tracking and reporting
-
-### Advanced Features
-
-#### Folder Browser
-- Navigate remote directory structure
-- Create new folders on-the-fly
-- Visual indicators for accessibility
-- Breadcrumb navigation
-
-#### Batch Selection
 ```bash
-# Examples of file selection syntax:
-1 3-5        # Files 1, 3, 4, 5
-all          # All available files
-1,3,5        # Files 1, 3, 5
-2-4,7        # Files 2, 3, 4, 7
+# Script operations (interactive or direct)
+sudo ./run.sh                      # Interactive menu
+sudo ./run.sh install              # Install rclone
+sudo ./run.sh config               # Configure remote (select from menu)
+sudo ./run.sh config server_backup # Configure specific remote
+sudo ./run.sh upload               # Upload backups
+sudo ./run.sh download             # Download files
+sudo ./run.sh sync                 # Sync directories
+sudo ./run.sh help                 # Show all available commands
+
+# Direct rclone commands
+rclone ls server_backup:                                # List files
+rclone copy /local/path/ server_backup:folder/ --progress  # Upload with progress
+rclone copy server_backup:file.txt /local/path/            # Download file
+rclone sync /local/ server_backup:backup/ --dry-run        # Sync (test first)
+rclone mkdir server_backup:newfolder                       # Create folder
+rclone about server_backup:                                # Storage info
 ```
 
-## Directory Structure
+**Useful Options:** `--progress` `--dry-run` `--include "*.tar.gz"` `--exclude "*.tmp"` `--bwlimit 1M`
 
+## Automation
+
+### Daily Backup Script
+```bash
+#!/bin/bash
+BACKUP_DIR="/home/user/backups"
+REMOTE="server_backup:$(date +%Y-%m-%d)"
+rclone mkdir "$REMOTE"
+rclone copy "$BACKUP_DIR/" "$REMOTE" --progress
 ```
-rclone_setup_with_googledrive/
-├── run.sh              # Main script
-├── config.json            # Configuration file (keep private)
-├── sample_config.json     # Example configuration
-├── README.md              # This file
-├── LICENSE                # License information
-└── .gitignore            # Git ignore rules
+
+### Cron Examples
+```bash
+# Daily backup at 2 AM
+0 2 * * * /path/to/daily_backup.sh
+
+# Weekly cleanup
+0 3 * * 0 rclone purge server_backup:old_folder
 ```
-
-## Default Paths
-
-- **Backup Source**: `~/backups` (user's home directory, configurable via BACKUP_SOURCE env var)
-- **Log Directory**: `/var/log`
-- **Config File**: `./config.json`
-- **rclone Config**: `~/.config/rclone/`
 
 ## Troubleshooting
 
+### Common Commands
+```bash
+rclone config show server_backup    # Show config
+rclone lsf server_backup: -v        # Test with verbose
+rclone version                       # Check version
+```
+
 ### Common Issues
+- **Remote not accessible**: Re-run configuration
+- **Permission denied**: Use sudo
+- **Auth expired**: Reconfigure remote
 
-**Remote not accessible**
-```bash
-# Check remote configuration
-rclone config show remote_name
-
-# Test connection
-rclone lsf remote_name: --max-depth 1
+## Directory Structure
+```
+├── run.sh                 # Main script
+├── config.json            # Credentials (keep private)
+├── sample_config.json     # Example config
+└── README.md              # This guide
 ```
 
-**Authentication expired**
-- Re-run remote configuration (Option 4 → 1)
-- Complete browser authentication process
+## Security Notes
+- Never commit `config.json`
+- Use `.gitignore` for sensitive files
+- Rotate API credentials regularly
+- Test with `--dry-run` first
 
-**Permission denied**
-- Ensure script is run with sudo
-- Check file permissions: `chmod +x run.sh`
-
-### Log Files
-
-Check logs for detailed error information:
-```bash
-# View rclone logs
-tail -f /var/log/rclone_remote_name.log
-
-# Check system logs
-journalctl -u rclone
-```
-
-## Security Considerations
-
-- **Never commit `config.json`** - Contains sensitive API credentials
-- Use `.gitignore` to exclude sensitive files
-- Regularly rotate Google API credentials
-- Monitor remote access logs in Google Cloud Console
-- Use dedicated service accounts for production environments
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-For issues and questions:
-- Check the troubleshooting section above
-- Review rclone documentation: https://rclone.org/docs/
-- Open an issue in the repository
-
-## Changelog
-
-### v1.0.0
-- Initial release
-- Interactive menu system
-- Multi-remote support
-- Advanced folder browser
-- Batch file operations
-- Comprehensive error handling
+---
+**Always use `--dry-run` for destructive operations like `sync` or `purge`**
